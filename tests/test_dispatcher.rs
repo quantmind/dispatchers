@@ -1,4 +1,4 @@
-use dispatcher::*;
+use dispatchers::*;
 
 
 

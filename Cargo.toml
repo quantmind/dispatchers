@@ -1,9 +1,9 @@
 [package]
-name = "dispatcher"
+name = "dispatchers"
 version = "0.1.0"
 edition = "2021"
-description = "A simple message dispatcher"
-repository = "https://github.com/quantmind/dispatcher"
+description = "A message dispatcher trait and some implementations"
+repository = "https://github.com/quantmind/dispatchers"
 readme = "README.md"
 license-file = "LICENSE"
 
