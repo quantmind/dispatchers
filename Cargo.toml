@@ -1,5 +1,17 @@
-[workspace]
-members = [
-    "dispatcher",
-    "examples/mutable",
-]
+[package]
+name = "dispatchers"
+version = "0.1.0"
+edition = "2021"
+description = "A message dispatcher trait and some implementations"
+repository = "https://github.com/quantmind/dispatchers"
+readme = "README.md"
+license-file = "LICENSE"
+
+
+[dependencies]
+
+
+
+[[example]]
+name = "mutable"
+path = "examples/mutable.rs"

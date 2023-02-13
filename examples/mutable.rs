@@ -1,4 +1,4 @@
-use dispatcher::{Dispatcher, LocalDispatcher, MessageType, Observer};
+use dispatchers::{Dispatcher, LocalDispatcher, MessageType, Observer};
 use std::cell::RefCell;
 
 #[derive(Default)]
