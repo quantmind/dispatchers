@@ -16,7 +16,7 @@ pub trait Dispatcher<'a, M> {
     fn register_handler(
         &mut self,
         message_type: &str,
-        observer: Box<dyn Observer<M> + 'a>,
+        observer: ObserverRef<'a, M>,
         tag: &str,
     );
     /// Unregister a observers for a message type and a tag
@@ -30,7 +30,7 @@ pub trait Dispatcher<'a, M> {
 /// This dispatcher only works on the same thread/coroutine.
 #[derive(Default)]
 pub struct LocalDispatcher<'a, M> {
-    handlers: HashMap<String, HashMap<String, Box<dyn Observer<M> + 'a>>>,
+    handlers: HashMap<String, HashMap<String, ObserverRef<'a, M>>>,
 }
 
 impl<'a, M> Dispatcher<'a, M> for LocalDispatcher<'a, M>
