@@ -1,5 +1,13 @@
-[workspace]
-members = [
-    "dispatcher",
-    "examples/mutable",
-]
+[package]
+name = "dispatcher"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+
+
+
+[[example]]
+name = "mutable"
+path = "examples/mutable.rs"
