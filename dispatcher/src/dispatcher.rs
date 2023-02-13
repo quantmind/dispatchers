@@ -1,39 +1,41 @@
-use super::Observer;
 use std::collections::HashMap;
 
 pub trait MessageType {
     fn message_type(&self) -> &str;
 }
 
-/// The observer reference type
-pub type ObserverRef<'a, M> = Box<dyn Observer<'a, M>>;
+/// An observer is a type that can handle a message.
+pub trait Observer<M> {
+    fn handle(&self, message: &M);
+}
 
-pub trait Dispatcher<'a, M> {
+pub trait Dispatcher<'a, M: MessageType> {
     /// Register an observer for a message type.
-    fn register_handler(&mut self, message_type: &str, observer: &dyn Observer<'a, M>, tag: &str);
+    fn register_handler(
+        &mut self,
+        message_type: &str,
+        observer: Box<dyn Observer<M> + 'a>,
+        tag: &str,
+    );
     /// Unregister a handler for a message type.
     fn unregister_handler(&mut self, message_type: &str, tag: &str);
     /// Dispatch a message.
-    fn dispatch(&mut self, message: &M) -> usize;
+    fn dispatch(&self, message: &M) -> usize;
 }
 
-pub struct LocalDispatcher<'a, M> {
-    handlers: HashMap<String, HashMap<String, &'a dyn Observer<'a, M>>>,
+#[derive(Default)]
+pub struct LocalDispatcher<'a, M: MessageType> {
+    handlers: HashMap<String, HashMap<String, Box<dyn Observer<M> + 'a>>>,
 }
 
-impl<'a, M> Default for LocalDispatcher<'a, M> {
-    fn default() -> Self {
-        Self {
-            handlers: HashMap::new(),
-        }
-    }
-}
-
-impl<'a, M> LocalDispatcher<'a, M> {
-    pub fn register_handler(
+impl<'a, M> Dispatcher<'a, M> for LocalDispatcher<'a, M>
+where
+    M: MessageType,
+{
+    fn register_handler(
         &mut self,
         message_type: &str,
-        observer: &'a dyn Observer<'a, M>,
+        observer: Box<dyn Observer<M> + 'a>,
         tag: &str,
     ) {
         match self.handlers.get_mut(message_type) {
@@ -48,25 +50,20 @@ impl<'a, M> LocalDispatcher<'a, M> {
         }
     }
 
-    pub fn unregister_handler(&mut self, message_type: &str, tag: &str) {
-        match self.handlers.get_mut(message_type) {
-            Some(observers) => {
-                observers.remove(tag);
-            }
-            None => {}
+    fn unregister_handler(&mut self, message_type: &str, tag: &str) {
+        if let Some(observers) = self.handlers.get_mut(message_type) {
+            observers.remove(tag);
         }
     }
-}
 
-impl<'a, M: MessageType> LocalDispatcher<'a, M> {
     /// Dispatch method
     ///
     /// Trigger callbacks for registered observers for the given message type
-    pub fn dispatch(&mut self, message: &M) -> usize {
+    fn dispatch(&self, message: &M) -> usize {
         let message_type = message.message_type();
-        if let Some(observers) = self.handlers.get_mut(message_type) {
-            for observer in observers.values_mut() {
-                //observer.handle(message);
+        if let Some(observers) = self.handlers.get(message_type) {
+            for observer in observers.values() {
+                observer.handle(message);
             }
             return observers.len();
         }

@@ -5,3 +5,10 @@ version = 3
 [[package]]
 name = "dispatcher"
 version = "0.1.0"
+
+[[package]]
+name = "mutable"
+version = "0.1.0"
+dependencies = [
+ "dispatcher",
+]
