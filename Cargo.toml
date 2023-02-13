@@ -5,7 +5,7 @@ edition = "2021"
 description = "A simple message dispatcher"
 repository = "https://github.com/quantmind/dispatcher"
 readme = "README.md"
-licence = "MIT"
+license-file = "LICENSE"
 
 
 [dependencies]
