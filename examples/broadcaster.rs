@@ -1,9 +1,14 @@
-use dispatchers::*;
+use dispatchers::{Broadcaster, MessageType};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Message {
     pub value: i32,
     pub message_type: String,
+}
+
+#[derive(Default)]
+struct Data {
+    value: i32,
 }
 
 impl MessageType for Message {
@@ -27,7 +32,6 @@ impl Message {
     }
 }
 
-#[test]
-fn simple_dispatcher() {
-    let mut dispatcher = LocalDispatcher::<'_, Message>::default();
+fn main() {
+    let mut dispatcher = Broadcaster::<'_, Message>::default();
 }
