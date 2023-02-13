@@ -9,6 +9,8 @@ pub trait Observer<M> {
     fn call(&self, message: &M);
 }
 
+pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a>;
+
 pub trait Dispatcher<'a, M: MessageType> {
     /// Register an observer for a message type.
     fn register_handler(
