@@ -2,7 +2,7 @@ use super::{Dispatcher, LocalDispatcher, MessageType, ObserverRef};
 use std::fmt::Debug;
 use tokio::sync::broadcast::{channel, Receiver, Sender};
 
-pub struct Broadcaster<'a, M: Clone + MessageType> {
+pub struct Broadcaster<'a, M> {
     local: LocalDispatcher<'a, M>,
     sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive

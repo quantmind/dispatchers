@@ -11,7 +11,7 @@ pub trait Observer<M> {
 
 pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a>;
 
-pub trait Dispatcher<'a, M: MessageType> {
+pub trait Dispatcher<'a, M> {
     /// Register an observer for a message type.
     fn register_handler(
         &mut self,
@@ -29,7 +29,7 @@ pub trait Dispatcher<'a, M: MessageType> {
 ///
 /// This dispatcher only works on the same thread/coroutine.
 #[derive(Default)]
-pub struct LocalDispatcher<'a, M: MessageType> {
+pub struct LocalDispatcher<'a, M> {
     handlers: HashMap<String, HashMap<String, Box<dyn Observer<M> + 'a>>>,
 }
 
