@@ -6,7 +6,7 @@ pub trait MessageType {
 
 /// An observer is a type that can handle a message.
 pub trait Observer<M> {
-    fn handle(&self, message: &M);
+    fn call(&self, message: &M);
 }
 
 pub trait Dispatcher<'a, M: MessageType> {
@@ -17,12 +17,15 @@ pub trait Dispatcher<'a, M: MessageType> {
         observer: Box<dyn Observer<M> + 'a>,
         tag: &str,
     );
-    /// Unregister a handler for a message type.
+    /// Unregister a observers for a message type and a tag
     fn unregister_handler(&mut self, message_type: &str, tag: &str);
-    /// Dispatch a message.
+    /// Dispatch a message
     fn dispatch(&self, message: &M) -> usize;
 }
 
+/// A local dispatcher
+///
+/// This dispatcher only works on the same thread/coroutine.
 #[derive(Default)]
 pub struct LocalDispatcher<'a, M: MessageType> {
     handlers: HashMap<String, HashMap<String, Box<dyn Observer<M> + 'a>>>,
@@ -63,7 +66,7 @@ where
         let message_type = message.message_type();
         if let Some(observers) = self.handlers.get(message_type) {
             for observer in observers.values() {
-                observer.handle(message);
+                observer.call(message);
             }
             return observers.len();
         }

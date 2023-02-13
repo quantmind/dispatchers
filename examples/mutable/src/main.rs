@@ -12,6 +12,7 @@ struct Data {
     value: i32,
 }
 
+/// A container of data
 #[derive(Default)]
 struct Container {
     data: RefCell<Data>,
@@ -69,21 +70,14 @@ impl Container {
     }
 }
 
-impl Observer<Message> for Container {
-    fn handle(&self, message: &Message) {
-        let mut data = self.data.borrow_mut();
-        data.value = message.value;
-    }
-}
-
 impl<'a> Observer<Message> for ContainerUpdate<'a> {
-    fn handle(&self, message: &Message) {
+    fn call(&self, message: &Message) {
         self.container.set_value(message.value);
     }
 }
 
 impl<'a> Observer<Message> for ContainerPrint<'a> {
-    fn handle(&self, _: &Message) {
+    fn call(&self, _: &Message) {
         println!("Message: {}", self.container.value());
     }
 }
