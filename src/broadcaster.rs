@@ -1,6 +1,6 @@
 use super::{Dispatcher, LocalDispatcher, MessageType, ObserverRef};
 use std::fmt::Debug;
-use tokio::sync::broadcast::{channel, Receiver, Sender};
+use tokio::sync::broadcast::{channel, Receiver, Sender, error::RecvError};
 
 pub struct Broadcaster<'a, M> {
     local: LocalDispatcher<'a, M>,
@@ -15,26 +15,16 @@ pub struct SyncBroadcaster<M> {
 
 impl<'a, M> Default for Broadcaster<'a, M>
 where
-    M: Clone + MessageType + std::default::Default,
+    M: Clone + MessageType + Send + std::default::Default,
 {
     fn default() -> Self {
         Self::new(100)
     }
 }
 
-impl<'a, M> Clone for Broadcaster<'a, M>
-where
-    M: Clone + MessageType + std::default::Default,
-{
-    /// Clone the broadcaster so it can be moved to another thread
-    fn clone(&self) -> Self {
-        Self::from_sender(self.sender.clone())
-    }
-}
-
 impl<'a, M> Dispatcher<'a, M> for Broadcaster<'a, M>
 where
-    M: Clone + MessageType + Debug + std::default::Default,
+    M: Clone + MessageType + Debug + Send + std::default::Default,
 {
     fn register_handler(&mut self, message_type: &str, observer: ObserverRef<'a, M>, tag: &str) {
         self.local.register_handler(message_type, observer, tag);
@@ -46,15 +36,16 @@ where
 
     fn dispatch(&self, message: &M) -> usize {
         // dispatch to local observers
-        self.local.dispatch(message);
+        let mut observers = self.local.dispatch(message);
         // dispatch to remote observers
-        self.sender.send(message.clone()).unwrap()
+        observers += self.sender.send(message.clone()).unwrap();
+        observers
     }
 }
 
 impl<'a, M> Broadcaster<'a, M>
 where
-    M: Clone + MessageType + std::default::Default,
+    M: Clone + MessageType + Send + std::default::Default,
 {
     /// Create a new broadcaster
     ///
@@ -77,16 +68,29 @@ where
         }
     }
 
+    /// Create a clone which can be sent across thread/coroutines
     pub fn sync_clone(&self) -> SyncBroadcaster<M> {
         SyncBroadcaster {
             sender: self.sender.clone(),
+        }
+    }
+
+    pub async fn listen(&self) -> Result<(), RecvError> {
+        let mut receiver = self.sender.subscribe();
+        loop {
+            match receiver.recv().await {
+                Ok(message) => self.local.dispatch(&message),
+                Err(err) => {
+                    return Err(err);
+                }
+            };
         }
     }
 }
 
 impl<M> SyncBroadcaster<M>
 where
-    M: Clone + MessageType + std::default::Default,
+    M: Clone + MessageType + Send + std::default::Default,
 {
     /// Get a receiver to receive messages from remote observers
     pub fn receiver(&self) -> Receiver<M> {

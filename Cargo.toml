@@ -6,10 +6,13 @@ description = "A message dispatcher trait and some implementations"
 repository = "https://github.com/quantmind/dispatchers"
 readme = "README.md"
 license-file = "LICENSE"
+exclude = [
+    "justfile",
+]
 
 
 [dependencies]
-tokio = { version = "1.25.0", features = ["sync"], optional = true }
+tokio = { version = "1.25.0", features = ["full"], optional = true }
 
 
 [features]

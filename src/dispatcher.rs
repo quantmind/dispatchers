@@ -40,7 +40,7 @@ where
     fn register_handler(
         &mut self,
         message_type: &str,
-        observer: Box<dyn Observer<M> + 'a>,
+        observer: ObserverRef<'a, M>,
         tag: &str,
     ) {
         match self.handlers.get_mut(message_type) {
