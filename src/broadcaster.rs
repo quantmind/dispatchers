@@ -2,8 +2,22 @@ use super::{Dispatcher, LocalDispatcher, MessageType, ObserverRef};
 use std::fmt::Debug;
 use tokio::sync::broadcast::{channel, Receiver, Sender, error::RecvError};
 
-pub struct Broadcaster<'a, M> {
-    local: LocalDispatcher<'a, M>,
+pub trait Dispatcher<'a, M> {
+    /// Register an observer for a message type.
+    fn register_handler(
+        &mut self,
+        message_type: &str,
+        observer: ObserverRef<'a, M>,
+        tag: &str,
+    );
+    /// Unregister a observers for a message type and a tag
+    fn unregister_handler(&mut self, message_type: &str, tag: &str);
+    /// Dispatch a message
+    fn dispatch(&self, message: &M) -> usize;
+}
+
+
+pub struct Broadcaster<M> {
     sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive
     _receiver: Option<Receiver<M>>,
@@ -13,7 +27,7 @@ pub struct SyncBroadcaster<M> {
     sender: Sender<M>,
 }
 
-impl<'a, M> Default for Broadcaster<'a, M>
+impl<M> Default for Broadcaster<M>
 where
     M: Clone + MessageType + Send + std::default::Default,
 {
@@ -22,7 +36,7 @@ where
     }
 }
 
-impl<'a, M> Dispatcher<'a, M> for Broadcaster<'a, M>
+impl<M> Dispatcher<M> for Broadcaster<M>
 where
     M: Clone + MessageType + Debug + Send + std::default::Default,
 {

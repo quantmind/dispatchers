@@ -39,6 +39,14 @@ async fn main() {
     let sync_dispatcher = dispatcher.sync_clone();
     tokio::spawn(async move {
         let d = sync_dispatcher.broadcaster();
-        d.listen().await;
+        let mut receiver = sync_dispatcher.receiver();
+        loop {
+            match receiver.recv().await {
+                Ok(message) => {
+                    d.dispatch(&message).await;
+                }
+                Err(err) => break,
+            }
+        }
     });
 }
