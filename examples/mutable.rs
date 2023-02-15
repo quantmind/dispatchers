@@ -1,5 +1,6 @@
 use dispatchers::{Dispatcher, LocalDispatcher, MessageType, Observer};
 use std::cell::RefCell;
+use std::rc::Rc;
 
 #[derive(Default)]
 struct Message {

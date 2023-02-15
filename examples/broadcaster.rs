@@ -1,7 +1,7 @@
 use dispatchers::{Broadcaster, MessageType};
 use tokio;
 
-#[derive(Default, Clone)]
+#[derive(Default, Debug, Clone)]
 struct Message {
     pub value: i32,
     pub message_type: String,
@@ -35,18 +35,9 @@ impl Message {
 
 #[tokio::main]
 async fn main() {
-    let dispatcher = Broadcaster::<'_, Message>::default();
-    let sync_dispatcher = dispatcher.sync_clone();
+    let dispatcher = Broadcaster::<Message>::default();
+    let shared = dispatcher.sync_clone();
     tokio::spawn(async move {
-        let d = sync_dispatcher.broadcaster();
-        let mut receiver = sync_dispatcher.receiver();
-        loop {
-            match receiver.recv().await {
-                Ok(message) => {
-                    d.dispatch(&message).await;
-                }
-                Err(err) => break,
-            }
-        }
+        shared.listen().await;
     });
 }

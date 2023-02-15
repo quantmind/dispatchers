@@ -10,6 +10,9 @@ watch:
 broadcaster:
     cargo run --all-features --example broadcaster
 
+# run the mutable example
+mutable:
+    cargo run --example mutable
 
 # run linters
 lint:
