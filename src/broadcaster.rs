@@ -6,19 +6,10 @@ use tokio::sync::broadcast::{channel, error::RecvError, Receiver, Sender};
 
 pub type ObserverRef<M> = Box<dyn Observer<M>>;
 
-pub trait SharedDispatcher<M> {
-    /// Register an observer for a message type.
-    fn register_handler(&mut self, message_type: &str, observer: ObserverRef<M>, tag: &str);
-    /// Unregister a observers for a message type and a tag
-    fn unregister_handler(&mut self, message_type: &str, tag: &str);
-    /// Dispatch a message
-    fn dispatch(&self, message: &M) -> usize;
-}
-
 
 pub struct Broadcaster<M> {
-    //handlers: HashMap<String, HashMap<String, ObserverRef<M>>>,
-    sender: Sender<M>,
+    handlers: HashMap<String, HashMap<String, ObserverRef<M>>>,
+    pub sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive
     _receiver: Option<Receiver<M>>,
 }
@@ -33,24 +24,6 @@ where
     }
 }
 
-impl<M> SharedDispatcher<M> for Broadcaster<M>
-where
-    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
-{
-    fn register_handler(&mut self, message_type: &str, observer: ObserverRef<M>, tag: &str) {}
-
-    fn unregister_handler(&mut self, message_type: &str, tag: &str) {}
-
-    fn dispatch(&self, message: &M) -> usize {
-        // dispatch to local observers
-        //let mut observers = self.local.dispatch(message);
-        // dispatch to remote observers
-        let mut observers = 0;
-        observers += self.sender.send(message.clone()).unwrap();
-        observers
-    }
-}
-
 impl<M> Broadcaster<M>
 where
     M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
@@ -62,7 +35,7 @@ where
     pub fn new(capacity: usize) -> Self {
         let (sender, receiver) = channel(capacity);
         Self {
-            //handlers: HashMap::default(),
+            handlers: HashMap::default(),
             sender,
             _receiver: Some(receiver),
         }
@@ -70,10 +43,23 @@ where
 
     pub fn from_sender(sender: Sender<M>) -> Self {
         Self {
-            //handlers: HashMap::default(),
+            handlers: HashMap::default(),
             sender,
             _receiver: None,
         }
+    }
+
+    pub fn register_handler(&mut self, message_type: &str, observer: ObserverRef<M>, tag: &str) {}
+
+    pub fn unregister_handler(&mut self, message_type: &str, tag: &str) {}
+
+    pub fn dispatch(&self, message: &M) -> usize {
+        // dispatch to local observers
+        //let mut observers = self.local.dispatch(message);
+        // dispatch to remote observers
+        let mut observers = 0;
+        observers += self.sender.send(message.clone()).unwrap();
+        observers
     }
 
     /// Create a clone which can be sent across thread/coroutines

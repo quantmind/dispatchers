@@ -38,6 +38,16 @@ async fn main() {
     let dispatcher = Broadcaster::<Message>::default();
     let shared = dispatcher.sync_clone();
     tokio::spawn(async move {
-        shared.listen().await;
+        let mut receiver = shared.sender.subscribe();
+        loop {
+            match receiver.recv().await {
+                Ok(message) => {
+                    shared.dispatch(&message);
+                }
+                Err(err) => {
+                    break;
+                }
+            };
+        }
     });
 }
