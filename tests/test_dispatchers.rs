@@ -32,6 +32,6 @@ fn simple_dispatcher() {
     let dispatcher = Broadcaster::<Message>::default();
     let message = Message::update(1);
     assert_eq!(message.value, 1);
-    assert_eq!(dispatcher.dispatch(&message), 1);
-    assert_eq!(dispatcher.dispatch(&Message::print()), 1);
+    assert_eq!(dispatcher.dispatch(&message).unwrap(), 1);
+    assert_eq!(dispatcher.dispatch(&Message::print()).unwrap(), 1);
 }

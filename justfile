@@ -4,7 +4,11 @@ build:
 
 # cargo watch all fixtures
 watch:
-    cargo watch --features async
+    cargo watch --features shared
+
+# create documentations
+doc:
+    cargo doc --all-features --no-deps --open
 
 # run broadcaster example
 broadcaster:

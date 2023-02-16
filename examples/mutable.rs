@@ -87,8 +87,8 @@ fn main() {
     let container = Container::default();
     let mut dispatcher = LocalDispatcher::<'_, Message>::default();
     container.register(&mut dispatcher);
-    dispatcher.dispatch(&Message::update(42));
-    dispatcher.dispatch(&Message::print());
-    dispatcher.dispatch(&Message::update(55));
-    dispatcher.dispatch(&Message::print());
+    dispatcher.dispatch(&Message::update(42)).unwrap();
+    dispatcher.dispatch(&Message::print()).unwrap();
+    dispatcher.dispatch(&Message::update(55)).unwrap();
+    dispatcher.dispatch(&Message::print()).unwrap();
 }

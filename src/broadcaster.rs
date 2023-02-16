@@ -1,4 +1,4 @@
-use super::{Dispatcher, LocalDispatcher, MessageType, ObserverRef};
+use super::{Dispatcher, DispatcherError, LocalDispatcher, MessageType, ObserverRef};
 use tokio::sync::broadcast::{channel, error, Receiver, Sender};
 
 pub struct Broadcaster<'a, M> {
@@ -29,12 +29,14 @@ where
         self.local.unregister_handler(message_type, tag);
     }
 
-    fn dispatch(&self, message: &M) -> usize {
+    fn dispatch(&self, message: &M) -> Result<usize, DispatcherError> {
         // dispatch to local observers
-        let mut observers = self.local.dispatch(message);
+        let n1 = self.local.dispatch(message).unwrap();
         // dispatch to remote observers
-        observers += self.sender.send(message.clone()).unwrap();
-        observers
+        self.sender
+            .send(message.clone())
+            .map(|n| n1 + n)
+            .map_err(|err| DispatcherError::SendError(err.to_string()))
     }
 }
 
@@ -78,19 +80,5 @@ where
 
     pub fn sender(&self) -> Sender<M> {
         self.sender.clone()
-    }
-
-    pub async fn listen(&self) -> Result<(), error::RecvError> {
-        let mut receiver = self.sender.subscribe();
-        loop {
-            match receiver.recv().await {
-                Ok(message) => {
-                    self.dispatch(&message);
-                }
-                Err(err) => {
-                    return Err(err);
-                }
-            };
-        }
     }
 }

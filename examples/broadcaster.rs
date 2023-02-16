@@ -83,7 +83,7 @@ async fn main() {
         loop {
             match receiver.recv().await {
                 Ok(message) => {
-                    shared.local.dispatch(&message);
+                    shared.local.dispatch(&message).unwrap();
                     if message.message_type == "exit" {
                         break;
                     }
@@ -102,9 +102,9 @@ async fn main() {
             _ = tokio::time::sleep(tokio::time::Duration::from_millis(500)) => {
                 counter += 1;
                 if counter < 6 {
-                    dispatcher.dispatch(&Message::update(counter));
+                    dispatcher.dispatch(&Message::update(counter)).unwrap();
                 } else if counter == 6 {
-                    dispatcher.dispatch(&Message::exit());
+                    dispatcher.dispatch(&Message::exit()).unwrap();
                 }
             }
 
