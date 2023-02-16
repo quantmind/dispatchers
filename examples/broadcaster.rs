@@ -1,4 +1,4 @@
-use dispatchers::{Broadcaster, MessageType};
+use dispatchers::{Broadcaster, Dispatcher, MessageType, Observer};
 use tokio;
 
 #[derive(Default, Debug, Clone)]
@@ -33,12 +33,52 @@ impl Message {
     }
 }
 
+struct Handler<F>
+where
+    F: Fn(&Message) + Send,
+{
+    fun: F,
+}
+
+impl<F> Handler<F>
+where
+    F: Fn(&Message) + Send,
+{
+    pub fn new<'a>(fun: F) -> Box<Self> {
+        Box::new(Self { fun })
+    }
+}
+
+impl<'a, F> Observer<Message> for Handler<F>
+where
+    F: Fn(&Message) + Send + 'a,
+{
+    fn call(&self, message: &Message) {
+        (self.fun)(message)
+    }
+}
+
 #[tokio::main]
 async fn main() {
     let dispatcher = Broadcaster::<Message>::default();
-    let shared = dispatcher.sync_clone();
+    let mut shared = dispatcher.sync_clone();
     tokio::spawn(async move {
-        let mut receiver = shared.sender.subscribe();
+        //let mut value = 0;
+        shared.register_handler(
+            "print",
+            Handler::new(|message: &Message| {
+                println!("update: {}", message.value);
+            }),
+            "tag1",
+        );
+        shared.register_handler(
+            "update",
+            Handler::new(|message: &Message| {
+                //value = message.value.clone();
+            }),
+            "tag1",
+        );
+        let mut receiver = shared.receiver();
         loop {
             match receiver.recv().await {
                 Ok(message) => {
