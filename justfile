@@ -28,3 +28,7 @@ lint-ci:
 # cargo test
 test:
     cargo test --all-features
+
+# cargo publish
+publish:
+    cargo publish --all-features
