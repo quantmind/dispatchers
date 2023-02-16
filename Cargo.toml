@@ -17,9 +17,17 @@ tokio = { version = "1.25.0", features = ["full"], optional = true }
 
 
 [features]
-async = ["async-trait", "tokio"]
+shared = ["async-trait", "tokio"]
 
 
 [[example]]
 name = "mutable"
 path = "examples/mutable.rs"
+
+[[example]]
+name = "broadcaster"
+path = "examples/broadcaster.rs"
+
+[[test]]
+name = "tests"
+path = "tests/test_dispatchers.rs"

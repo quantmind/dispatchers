@@ -7,11 +7,6 @@ struct Message {
     pub message_type: String,
 }
 
-#[derive(Default)]
-struct Data {
-    value: i32,
-}
-
 impl MessageType for Message {
     fn message_type(&self) -> &str {
         &self.message_type
@@ -25,10 +20,10 @@ impl Message {
             message_type: "update".to_owned(),
         }
     }
-    pub fn print() -> Self {
+    pub fn exit() -> Self {
         Self {
             value: 0,
-            message_type: "print".to_owned(),
+            message_type: "exit".to_owned(),
         }
     }
 }
@@ -49,9 +44,9 @@ where
     }
 }
 
-impl<'a, F> Observer<Message> for Handler<F>
+impl<F> Observer<Message> for Handler<F>
 where
-    F: Fn(&Message) + Send + 'a,
+    F: Fn(&Message) + Send,
 {
     fn call(&self, message: &Message) {
         (self.fun)(message)
@@ -61,33 +56,64 @@ where
 #[tokio::main]
 async fn main() {
     let dispatcher = Broadcaster::<Message>::default();
-    let mut shared = dispatcher.sync_clone();
+    let d = dispatcher.sync_clone();
     tokio::spawn(async move {
-        //let mut value = 0;
+        // the sender is used to send messages to the main thread
+        let sender = d.sender();
+        let mut shared = d.sync_clone();
+
+        // registers local handlers
         shared.register_handler(
-            "print",
+            "update",
             Handler::new(|message: &Message| {
                 println!("update: {}", message.value);
             }),
             "tag1",
         );
         shared.register_handler(
-            "update",
-            Handler::new(|message: &Message| {
-                //value = message.value.clone();
+            "exit",
+            Handler::new(|_message: &Message| {
+                sender.send(Message::exit()).unwrap();
             }),
             "tag1",
         );
+
+        // start loop for receiving messages from other threads
         let mut receiver = shared.receiver();
         loop {
             match receiver.recv().await {
                 Ok(message) => {
-                    shared.dispatch(&message);
+                    shared.local.dispatch(&message);
+                    if message.message_type == "exit" {
+                        break;
+                    }
                 }
-                Err(err) => {
+                Err(_err) => {
                     break;
                 }
             };
         }
     });
+
+    let mut receiver = dispatcher.receiver();
+    let mut counter = 0;
+    loop {
+        tokio::select! {
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(500)) => {
+                counter += 1;
+                if counter < 6 {
+                    dispatcher.dispatch(&Message::update(counter));
+                } else if counter == 6 {
+                    dispatcher.dispatch(&Message::exit());
+                }
+            }
+
+            Ok(message) = receiver.recv() => {
+                if message.message_type == "exit" {
+                    println!("exit");
+                    break;
+                }
+            }
+        }
+    }
 }

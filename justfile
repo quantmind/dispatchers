@@ -1,6 +1,6 @@
-# cargo build and test
+# cargo build
 build:
-    cargo build --all-features --tests
+    cargo build --all-features
 
 # cargo watch all fixtures
 watch:
@@ -24,3 +24,7 @@ lint:
 lint-ci:
     cargo clippy --all-features --tests -- -D warnings
     cargo fmt --all -- --check
+
+# cargo test
+test:
+    cargo test --all-features

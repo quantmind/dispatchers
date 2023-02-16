@@ -1,8 +1,8 @@
 use super::{Dispatcher, LocalDispatcher, MessageType, ObserverRef};
-use tokio::sync::broadcast::{channel, error::RecvError, Receiver, Sender};
+use tokio::sync::broadcast::{channel, error, Receiver, Sender};
 
 pub struct Broadcaster<'a, M> {
-    local: LocalDispatcher<'a, M>,
+    pub local: LocalDispatcher<'a, M>,
     pub sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive
     _receiver: Option<Receiver<M>>,
@@ -68,11 +68,19 @@ where
         Broadcaster::from_sender(self.sender.clone())
     }
 
+    pub fn send(&self, message: M) -> Result<usize, error::SendError<M>> {
+        self.sender.send(message)
+    }
+
     pub fn receiver(&self) -> Receiver<M> {
         self.sender.subscribe()
     }
 
-    pub async fn listen(&self) -> Result<(), RecvError> {
+    pub fn sender(&self) -> Sender<M> {
+        self.sender.clone()
+    }
+
+    pub async fn listen(&self) -> Result<(), error::RecvError> {
         let mut receiver = self.sender.subscribe();
         loop {
             match receiver.recv().await {
