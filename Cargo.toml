@@ -12,13 +12,22 @@ exclude = [
 
 
 [dependencies]
+async-trait = { version = "0.1.64", optional = true }
 tokio = { version = "1.25.0", features = ["full"], optional = true }
 
 
 [features]
-async = ["tokio"]
+shared = ["async-trait", "tokio"]
 
 
 [[example]]
 name = "mutable"
 path = "examples/mutable.rs"
+
+[[example]]
+name = "broadcaster"
+path = "examples/broadcaster.rs"
+
+[[test]]
+name = "tests"
+path = "tests/test_dispatchers.rs"

@@ -9,16 +9,11 @@ pub trait Observer<M> {
     fn call(&self, message: &M);
 }
 
-pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a>;
+pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a + Send + Sync>;
 
 pub trait Dispatcher<'a, M> {
     /// Register an observer for a message type.
-    fn register_handler(
-        &mut self,
-        message_type: &str,
-        observer: ObserverRef<'a, M>,
-        tag: &str,
-    );
+    fn register_handler(&mut self, message_type: &str, observer: ObserverRef<'a, M>, tag: &str);
     /// Unregister a observers for a message type and a tag
     fn unregister_handler(&mut self, message_type: &str, tag: &str);
     /// Dispatch a message
@@ -37,12 +32,7 @@ impl<'a, M> Dispatcher<'a, M> for LocalDispatcher<'a, M>
 where
     M: MessageType,
 {
-    fn register_handler(
-        &mut self,
-        message_type: &str,
-        observer: ObserverRef<'a, M>,
-        tag: &str,
-    ) {
+    fn register_handler(&mut self, message_type: &str, observer: ObserverRef<'a, M>, tag: &str) {
         match self.handlers.get_mut(message_type) {
             Some(observers) => {
                 observers.insert(tag.to_owned(), observer);

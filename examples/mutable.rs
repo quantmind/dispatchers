@@ -1,5 +1,5 @@
 use dispatchers::{Dispatcher, LocalDispatcher, MessageType, Observer};
-use std::cell::RefCell;
+use std::sync::Mutex;
 
 #[derive(Default)]
 struct Message {
@@ -12,10 +12,11 @@ struct Data {
     value: i32,
 }
 
-/// A container of data
 #[derive(Default)]
 struct Container {
-    data: RefCell<Data>,
+    data: Mutex<Data>,
+    // this won't work, because RefCell is not Sync
+    //data: RefCell<Data>,
 }
 
 struct ContainerUpdate<'a> {
@@ -62,11 +63,11 @@ impl Container {
     }
 
     pub fn value(&self) -> i32 {
-        self.data.borrow().value
+        self.data.lock().unwrap().value
     }
 
     pub fn set_value(&self, value: i32) {
-        self.data.borrow_mut().value = value;
+        self.data.lock().unwrap().value = value;
     }
 }
 

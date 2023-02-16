@@ -2,8 +2,8 @@ mod dispatcher;
 
 pub use self::dispatcher::*;
 
-#[cfg(feature = "async")]
+#[cfg(feature = "shared")]
 mod broadcaster;
 
-#[cfg(feature = "async")]
+#[cfg(feature = "shared")]
 pub use self::broadcaster::*;

@@ -1,6 +1,6 @@
 use dispatchers::*;
 
-#[derive(Default)]
+#[derive(Default, Clone, Debug)]
 struct Message {
     pub value: i32,
     pub message_type: String,
@@ -29,5 +29,9 @@ impl Message {
 
 #[test]
 fn simple_dispatcher() {
-    let mut dispatcher = LocalDispatcher::<'_, Message>::default();
+    let dispatcher = Broadcaster::<Message>::default();
+    let message = Message::update(1);
+    assert_eq!(message.value, 1);
+    assert_eq!(dispatcher.dispatch(&message), 1);
+    assert_eq!(dispatcher.dispatch(&Message::print()), 1);
 }
