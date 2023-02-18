@@ -18,7 +18,7 @@ pub struct BroadcasterSync<M> {
 
 impl<'a, M> Default for Broadcaster<'a, M>
 where
-    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
+    M: Clone + MessageType + std::default::Default + std::fmt::Debug,
 {
     fn default() -> Self {
         Self::new(100)
@@ -27,7 +27,7 @@ where
 
 impl<'a, M> Dispatcher<'a, M> for Broadcaster<'a, M>
 where
-    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
+    M: Clone + MessageType + std::default::Default + std::fmt::Debug,
 {
     fn register_handler(&mut self, message_type: &str, observer: ObserverRef<'a, M>, tag: &str) {
         self.local.register_handler(message_type, observer, tag);
@@ -50,7 +50,7 @@ where
 
 impl<'a, M> Clone for Broadcaster<'a, M>
 where
-    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
+    M: Clone + MessageType + std::default::Default + std::fmt::Debug,
 {
     fn clone(&self) -> Self {
         Self {
@@ -63,7 +63,7 @@ where
 
 impl<'a, M> Broadcaster<'a, M>
 where
-    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
+    M: Clone + MessageType + std::default::Default + std::fmt::Debug,
 {
     /// Create a new broadcaster
     ///
