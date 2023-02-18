@@ -44,7 +44,7 @@ impl<F> Handler<F>
 where
     F: Fn(&Message),
 {
-    pub fn new<'a>(fun: F) -> Box<Self> {
+    pub fn new(fun: F) -> Box<Self> {
         Box::new(Self { fun })
     }
 }
@@ -96,5 +96,4 @@ fn simple_dispatcher() {
 
     let clone = dispatcher.clone();
     assert_eq!(clone.dispatch(&message).unwrap(), 1);
-
 }
