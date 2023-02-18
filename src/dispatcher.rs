@@ -29,7 +29,7 @@ pub trait Observer<M> {
     fn call(&self, message: &M);
 }
 
-pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a + Send + Sync>;
+pub type ObserverRef<'a, M> = Box<dyn Observer<M> + 'a>;
 
 /// A dispatcher trait
 ///
