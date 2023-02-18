@@ -32,3 +32,6 @@ path = "examples/broadcaster.rs"
 [[test]]
 name = "tests"
 path = "tests/test_dispatchers.rs"
+
+[package.metadata.docs.rs]
+all-features = true

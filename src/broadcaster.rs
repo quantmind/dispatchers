@@ -1,7 +1,9 @@
 use super::{Dispatcher, DispatcherError, LocalDispatcher, MessageType, ObserverRef};
 use tokio::sync::broadcast::{channel, error, Receiver, Sender};
 
+/// A dispatcher which broadcast messages to other threads/coroutines
 pub struct Broadcaster<M> {
+    /// to dispatch messages to local observers
     pub local: LocalDispatcher<'static, M>,
     /// to send messages to other threads/coroutines
     broadcast_sender: Sender<M>,
