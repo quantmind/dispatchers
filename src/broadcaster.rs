@@ -2,20 +2,21 @@ use super::{Dispatcher, DispatcherError, LocalDispatcher, MessageType, ObserverR
 use tokio::sync::broadcast::{channel, error, Receiver, Sender};
 
 /// A dispatcher which broadcast messages to other threads/coroutines
-pub struct Broadcaster<M> {
+pub struct Broadcaster<'a, M> {
     /// to dispatch messages to local observers
-    pub local: LocalDispatcher<'static, M>,
+    pub local: LocalDispatcher<'a, M>,
     /// to send messages to other threads/coroutines
     broadcast_sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive
     _broadcast_receiver: Option<Receiver<M>>,
 }
 
+/// A dispatcher which which can be shared cross threads/coroutines
 pub struct BroadcasterSync<M> {
     broadcast_sender: Sender<M>,
 }
 
-impl<M> Default for Broadcaster<M>
+impl<'a, M> Default for Broadcaster<'a, M>
 where
     M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
 {
@@ -24,16 +25,11 @@ where
     }
 }
 
-impl<M> Dispatcher<'static, M> for Broadcaster<M>
+impl<'a, M> Dispatcher<'a, M> for Broadcaster<'a, M>
 where
     M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
 {
-    fn register_handler(
-        &mut self,
-        message_type: &str,
-        observer: ObserverRef<'static, M>,
-        tag: &str,
-    ) {
+    fn register_handler(&mut self, message_type: &str, observer: ObserverRef<'a, M>, tag: &str) {
         self.local.register_handler(message_type, observer, tag);
     }
 
@@ -52,7 +48,20 @@ where
     }
 }
 
-impl<M> Broadcaster<M>
+impl<'a, M> Clone for Broadcaster<'a, M>
+where
+    M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
+{
+    fn clone(&self) -> Self {
+        Self {
+            local: LocalDispatcher::default(),
+            broadcast_sender: self.broadcast_sender.clone(),
+            _broadcast_receiver: None,
+        }
+    }
+}
+
+impl<'a, M> Broadcaster<'a, M>
 where
     M: Clone + MessageType + Send + std::default::Default + std::fmt::Debug,
 {
