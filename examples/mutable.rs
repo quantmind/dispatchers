@@ -83,7 +83,7 @@ impl<'a> Observer<Message> for ContainerPrint<'a> {
 
 fn main() {
     let container = Container::default();
-    let mut dispatcher = LocalDispatcher::<'_, Message>::default();
+    let mut dispatcher = LocalDispatcher::<Message>::default();
     container.register(&mut dispatcher);
     dispatcher.dispatch(&Message::update(42)).unwrap();
     dispatcher.dispatch(&Message::print()).unwrap();
