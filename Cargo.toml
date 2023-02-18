@@ -1,6 +1,6 @@
 [package]
 name = "dispatchers"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 description = "A message dispatcher trait and some implementations"
 homepage = "https://docs.rs/dispatchers"
@@ -13,13 +13,12 @@ exclude = [
 
 
 [dependencies]
-async-trait = { version = "0.1.64", optional = true }
 thiserror = "1.0.38"
 tokio = { version = "1.25.0", features = ["full"], optional = true }
 
 
 [features]
-shared = ["async-trait", "tokio"]
+shared = ["tokio"]
 
 
 [[example]]

@@ -55,37 +55,29 @@ where
 
 #[tokio::main]
 async fn main() {
-    let dispatcher = Broadcaster::<Message>::default();
-    let d = dispatcher.sync_clone();
+    let mut input_dispatcher = Broadcaster::<Message>::default();
+    let output_dispatcher = Broadcaster::<Message>::default();
+    input_dispatcher.register_handler(
+        "update",
+        Handler::new(|message| {
+            println!("input update: {}", message.value);
+        }),
+        "tag1",
+    );
+    let input_shared = input_dispatcher.sync_clone();
+    let output_shared = output_dispatcher.sync_clone();
     tokio::spawn(async move {
-        // the sender is used to send messages to the main thread
-        let sender = d.sender();
-        let mut shared = d.sync_clone();
-
-        // registers local handlers
-        shared.register_handler(
-            "update",
-            Handler::new(|message: &Message| {
-                println!("update: {}", message.value);
-            }),
-            "tag1",
-        );
-        shared.register_handler(
-            "exit",
-            Handler::new(|_message: &Message| {
-                sender.send(Message::exit()).unwrap();
-            }),
-            "tag1",
-        );
-
         // start loop for receiving messages from other threads
-        let mut receiver = shared.receiver();
+        let mut receiver = output_shared.receiver();
         loop {
             match receiver.recv().await {
                 Ok(message) => {
-                    shared.local.dispatch(&message).unwrap();
                     if message.message_type == "exit" {
+                        input_shared.send(Message::exit()).unwrap();
                         break;
+                    } else {
+                        println!("output update: {}", message.value);
+                        input_shared.send(message).unwrap();
                     }
                 }
                 Err(_err) => {
@@ -95,20 +87,21 @@ async fn main() {
         }
     });
 
-    let mut receiver = dispatcher.receiver();
+    let mut input_receiver = input_dispatcher.receiver();
     let mut counter = 0;
     loop {
         tokio::select! {
-            _ = tokio::time::sleep(tokio::time::Duration::from_millis(500)) => {
+            _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => {
                 counter += 1;
                 if counter < 6 {
-                    dispatcher.dispatch(&Message::update(counter)).unwrap();
+                    output_dispatcher.dispatch(&Message::update(counter)).unwrap();
                 } else if counter == 6 {
-                    dispatcher.dispatch(&Message::exit()).unwrap();
+                    output_dispatcher.dispatch(&Message::exit()).unwrap();
                 }
             }
 
-            Ok(message) = receiver.recv() => {
+            Ok(message) = input_receiver.recv() => {
+                input_dispatcher.local.dispatch(&message).unwrap();
                 if message.message_type == "exit" {
                     println!("exit");
                     break;
