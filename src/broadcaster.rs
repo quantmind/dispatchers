@@ -4,7 +4,7 @@ use tokio::sync::broadcast::{channel, error, Receiver, Sender};
 /// A dispatcher which broadcast messages to other threads/coroutines
 pub struct Broadcaster<'a, M> {
     /// to dispatch messages to local observers
-    pub local: LocalDispatcher<'a, M>,
+    local: LocalDispatcher<'a, M>,
     /// to send messages to other threads/coroutines
     broadcast_sender: Sender<M>,
     /// This receiver is never used, it is just to keep the sender alive
@@ -76,6 +76,11 @@ where
             broadcast_sender,
             _broadcast_receiver: Some(broadcast_receiver),
         }
+    }
+
+    /// Dispatch a message to local observers only
+    pub fn dispatch_local(&self, message: &M) -> Result<usize, DispatcherError> {
+        self.local.dispatch(message)
     }
 
     /// Create a clone which can be sent across thread/coroutines

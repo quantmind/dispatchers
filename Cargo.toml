@@ -1,6 +1,6 @@
 [package]
 name = "dispatchers"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2021"
 description = "A message dispatcher trait and some implementations"
 homepage = "https://docs.rs/dispatchers"

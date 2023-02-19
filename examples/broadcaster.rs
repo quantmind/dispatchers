@@ -101,7 +101,7 @@ async fn main() {
             }
 
             Ok(message) = input_receiver.recv() => {
-                input_dispatcher.local.dispatch(&message).unwrap();
+                input_dispatcher.dispatch_local(&message).unwrap();
                 if message.message_type == "exit" {
                     println!("exit");
                     break;
