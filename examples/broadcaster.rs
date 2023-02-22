@@ -94,9 +94,9 @@ async fn main() {
             _ = tokio::time::sleep(tokio::time::Duration::from_millis(100)) => {
                 counter += 1;
                 if counter < 6 {
-                    output_dispatcher.dispatch(&Message::update(counter)).unwrap();
+                    output_dispatcher.dispatch(Message::update(counter)).unwrap();
                 } else if counter == 6 {
-                    output_dispatcher.dispatch(&Message::exit()).unwrap();
+                    output_dispatcher.dispatch(Message::exit()).unwrap();
                 }
             }
 

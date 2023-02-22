@@ -61,12 +61,12 @@ where
     }
 
     /// Dispatch a message to all observers
-    pub fn dispatch(&self, message: &M) -> Result<usize, DispatcherError> {
+    pub fn dispatch(&self, message: M) -> Result<usize, DispatcherError> {
         // dispatch to local observers
-        let n1 = self.local.dispatch(message)?;
+        let n1 = self.local.dispatch(&message)?;
         // dispatch to remote observers
         self.broadcast_sender
-            .send(message.clone())
+            .send(message)
             .map(|n| n1 + n)
             .map_err(|err| DispatcherError::SendError(err.to_string()))
     }
