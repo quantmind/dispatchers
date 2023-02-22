@@ -1,8 +1,8 @@
 [package]
 name = "dispatchers"
-version = "0.2.4"
+version = "0.2.5"
 edition = "2021"
-description = "A message dispatcher trait and some implementations"
+description = "Message dispatchers"
 homepage = "https://docs.rs/dispatchers"
 repository = "https://github.com/quantmind/dispatchers"
 readme = "README.md"

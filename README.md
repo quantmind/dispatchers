@@ -4,7 +4,7 @@
 [![Docs](https://img.shields.io/static/v1?label=docs.rs&message=dispatchers&color=blue)](https://docs.rs/dispatchers)
 [![build](https://github.com/quantmind/dispatchers/actions/workflows/build.yml/badge.svg)](https://github.com/quantmind/dispatchers/actions/workflows/build.yml)
 
-A simple message dispatcher trait for Rust and some implementations.
+Message dispatchers for Rust.
 
 ## Examples
 

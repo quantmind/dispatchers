@@ -1,4 +1,4 @@
-use dispatchers::{Broadcaster, Dispatcher, MessageType, Observer};
+use dispatchers::{Broadcaster, MessageType, Observer};
 use tokio;
 
 #[derive(Default, Debug, Clone)]
@@ -39,7 +39,7 @@ impl<F> Handler<F>
 where
     F: Fn(&Message) + Send,
 {
-    pub fn new<'a>(fun: F) -> Box<Self> {
+    pub fn new(fun: F) -> Box<Self> {
         Box::new(Self { fun })
     }
 }
@@ -64,8 +64,8 @@ async fn main() {
         }),
         "tag1",
     );
-    let input_shared = input_dispatcher.sync_clone();
-    let output_shared = output_dispatcher.sync_clone();
+    let input_shared = input_dispatcher.clone();
+    let output_shared = output_dispatcher.clone();
     tokio::spawn(async move {
         // start loop for receiving messages from other threads
         let mut receiver = output_shared.receiver();
