@@ -1,4 +1,4 @@
-use dispatchers::{Dispatcher, LocalDispatcher, MessageType, Observer};
+use dispatchers::{LocalDispatcher, MessageType, Observer};
 use std::cell::RefCell;
 
 #[derive(Default)]
@@ -47,7 +47,7 @@ impl Message {
 }
 
 impl Container {
-    pub fn register<'a>(&'a self, dispatcher: &mut dyn Dispatcher<'a, Message>) {
+    pub fn register<'a>(&'a self, dispatcher: &mut LocalDispatcher<'a, Message>) {
         dispatcher.register_handler(
             "update",
             Box::new(ContainerUpdate { container: self }),

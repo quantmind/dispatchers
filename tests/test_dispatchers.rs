@@ -59,15 +59,15 @@ where
 }
 
 #[test]
-fn simple_dispatcher() {
+fn local_dispatcher() {
     let container1 = RefCell::new(Container::default());
     let container2 = RefCell::new(Container::default());
 
-    let mut dispatcher = Broadcaster::<Message>::default();
+    let mut dispatcher = LocalDispatcher::<Message>::default();
     let message = Message::update(1);
     assert_eq!(message.value, 1);
-    assert_eq!(dispatcher.dispatch(&message).unwrap(), 1);
-    assert_eq!(dispatcher.dispatch(&Message::print()).unwrap(), 1);
+    assert_eq!(dispatcher.dispatch(&message).unwrap(), 0);
+    assert_eq!(dispatcher.dispatch(&Message::print()).unwrap(), 0);
 
     dispatcher.register_handler(
         "update",
@@ -78,7 +78,7 @@ fn simple_dispatcher() {
     );
 
     assert_eq!(container1.borrow().value, 0);
-    assert_eq!(dispatcher.dispatch(&message).unwrap(), 2);
+    assert_eq!(dispatcher.dispatch(&message).unwrap(), 1);
     assert_eq!(container1.borrow().value, 1);
 
     dispatcher.register_handler(
@@ -90,10 +90,17 @@ fn simple_dispatcher() {
     );
 
     assert_eq!(container2.borrow().value, 0);
-    assert_eq!(dispatcher.dispatch(&Message::update(5)).unwrap(), 3);
+    assert_eq!(dispatcher.dispatch(&Message::update(5)).unwrap(), 2);
     assert_eq!(container1.borrow().value, 5);
     assert_eq!(container2.borrow().value, 10);
 
-    let clone = dispatcher.clone();
-    assert_eq!(clone.dispatch(&message).unwrap(), 1);
+    dispatcher.unregister_handler("update", "tag3");
+    assert_eq!(dispatcher.dispatch(&Message::update(6)).unwrap(), 2);
+    assert_eq!(container1.borrow().value, 6);
+    assert_eq!(container2.borrow().value, 12);
+
+    dispatcher.unregister_handler("update", "tag2");
+    assert_eq!(dispatcher.dispatch(&Message::update(7)).unwrap(), 1);
+    assert_eq!(container1.borrow().value, 7);
+    assert_eq!(container2.borrow().value, 12);
 }
