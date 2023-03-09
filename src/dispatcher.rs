@@ -33,7 +33,7 @@ pub trait Observer<M> {
 pub type LocalObserverRef<'a, M> = Box<dyn Observer<M> + 'a>;
 
 /// A reference to an observer
-pub type ObserverRef<M> = Box<dyn Observer<M> + Send>;
+pub type ObserverRef<M> = Box<dyn Observer<M> + Send + Sync>;
 
 /// A local dispatcher
 ///
