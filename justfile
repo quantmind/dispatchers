@@ -36,3 +36,8 @@ test:
 # cargo publish
 publish:
     cargo publish --all-features
+
+
+# Oudated dependencies
+outdated:
+    cargo outdated -R
